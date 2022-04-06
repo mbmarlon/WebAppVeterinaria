@@ -148,7 +148,7 @@ function Formulario({pacientes, setPacientes, paciente,setPaciente}) {
                 <input
                 id="mail"
                 className="my-2 border-2 px-3 py-2 rounded-lg placeholder-gray-400 w-full"
-                type="mail" 
+                type="email" 
                 placeholder="Escribe tu email"
                 value={mail}
                     onChange={(e) => setMail(e.target.value)}
