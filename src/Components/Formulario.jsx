@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useState,useEffect} from "react";
 import Error from "./Error";
 
 //es el estado del componente
@@ -9,7 +9,7 @@ import Error from "./Error";
 //reglas
 //Siempre deben haber los mismos hooks
 
-function Formulario({pacientes, setPacientes}) {
+function Formulario({pacientes, setPacientes, paciente,setPaciente}) {
 
     //Creamos el estate del formulario
     const[mascota, setMascota] = useState('');
@@ -20,6 +20,30 @@ function Formulario({pacientes, setPacientes}) {
 
     //state del error
     const[error, setError] = useState(false);
+
+    //para evitar actualizaciones innecesarias
+    useEffect(() => {
+        //para llenar el formulraio
+        //comprobar si está vacío
+        if(Object.keys(pacientes).length >0){
+            //Añadir al formulario el valor del objeto
+            setMascota(paciente.mascota);
+            setPropietario(paciente.propietario);
+            setMail(paciente.mail);
+            setAlta(paciente.alta);
+            setSintomas(paciente.sintomas);
+        }
+        
+    }, [paciente])
+
+
+    //función para crear el key único
+    const generarId= () => {
+        const random = Math.random().toString(36).substring(2);
+        const fecha = Date.now().toString(36);
+
+        return random + fecha;
+    }
 
     //función que permite al usuario enviar el formulario por eso trae ´e´
     const handleSubmit = (e)=> {
@@ -37,17 +61,45 @@ function Formulario({pacientes, setPacientes}) {
                 propietario,
                 mail,
                 alta,
-                sintomas
+                sintomas,
+                // no podemos tener el ID aquí id: generarId()
             }
 
-            //... se usa para hacer una copia del arreglo
-            setPacientes([...pacientes,objetoPaciente]);
+            //Para que actualice los pacientes y no cree nuevos al editar los datos:
+            //Si los pacientes ya existen, tienen un ID
+            //El paciente tiene id?
+            if(paciente.id){
+                //Si, Se editan los pacientes
+                console.log('Editado');
+                //se asigna el mismo id al paciente del formulario
+                objetoPaciente.id = paciente.id;
+                //objeto con la iteración de pacientes
+                const pacientesActualizados = pacientes.map( pacienteInState =>
+                    //si tienen el mismo ID, agrega al mismo objeto y los anteriores
+                    pacienteInState.id === paciente.id ? objetoPaciente : pacienteInState)
+                //Actualiza los datos
+                setPacientes(pacientesActualizados);
+                //limpia el state
+                setPaciente({});
+
+            }else{
+                //No, Se agregan los pacientes nuevos
+                console.log('Nuevo registro');
+
+                //ésta es la función para generar El ID, la key del map en paciente
+                objetoPaciente.id = generarId();
+
+                //'...' se usa para hacer una copia del arreglo
+                setPacientes([...pacientes,objetoPaciente]);
+            }
+        }
+            // se re inicia el formulario
             setMascota('');
             setPropietario('');
             setMail('');
             setAlta('');
             setSintomas('');
-        }
+        
 
 
     }
@@ -128,8 +180,12 @@ function Formulario({pacientes, setPacientes}) {
                 />
               </div>
               { error && <Error mensaje= 'Todos los campos son obligatorios'/>}
-              <input type="submit" className="bg-indigo-600 w-full p-3 text-white uppercase font-bold
-              hover:bg-indigo-300 hover:text-indigo-600 shadow-lg rounded-xl cursor-pointer transition-all" />
+
+              <input type="submit" 
+                     className="bg-indigo-600 w-full p-3 text-white uppercase font-bold
+              hover:bg-indigo-300 hover:text-indigo-600 shadow-lg rounded-xl cursor-pointer transition-all"
+                     value={paciente.id ? 'Guardar Cambios' : 'Agregar Paciente'}
+                />
           </form>
       </div>
   )
